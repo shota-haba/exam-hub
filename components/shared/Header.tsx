@@ -12,15 +12,9 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 
-/**
- * ヘッダーコンポーネント
- */
 export default function Header() {
   const { user, signInWithGoogle, signOut, loading } = useAuth()
 
-  /**
-   * Googleサインイン処理
-   */
   const handleSignIn = async () => {
     try {
       await signInWithGoogle()
@@ -29,9 +23,6 @@ export default function Header() {
     }
   }
 
-  /**
-   * サインアウト処理
-   */
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -43,9 +34,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 max-w-7xl mx-auto">
-        {/* ロゴ */}
         <div className="flex items-center space-x-4">
-          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <Link href={user ? "/dashboard" : "/"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
               E
             </div>
@@ -53,7 +43,6 @@ export default function Header() {
           </Link>
         </div>
         
-        {/* ナビ */}
         <nav className="hidden md:flex items-center space-x-6">
           {user && (
             <>
@@ -73,7 +62,6 @@ export default function Header() {
           )}
         </nav>
         
-        {/* 認証 */}
         <div className="flex items-center space-x-4">
           {!user ? (
             <Button 

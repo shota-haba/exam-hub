@@ -30,11 +30,27 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getSession()
+  const { data: { session } } = await supabase.auth.getSession()
+
+  // 認証が必要なページ
+  const protectedPaths = ['/dashboard', '/exams', '/exam']
+  const isProtectedPath = protectedPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  // 未認証ユーザーが認証必須ページにアクセス → ルートにリダイレクト
+  if (isProtectedPath && !session) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // 認証済みユーザーがルートにアクセス → ダッシュボードにリダイレクト
+  if (request.nextUrl.pathname === '/' && session) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
 
   return response
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
 }

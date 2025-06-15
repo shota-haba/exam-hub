@@ -1,7 +1,7 @@
-import Header from '@/components/Header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
+import Header from '@/components/shared/Header'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -9,7 +9,6 @@ export default function Home() {
       <Header />
       
       <main className="flex-1">
-        {/* ヒーロー */}
         <section className="py-20 px-4 border-b">
           <div className="container max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
@@ -24,14 +23,10 @@ export default function Home() {
               <Button size="lg" asChild>
                 <Link href="/dashboard">開始</Link>
               </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/exams">試験管理</Link>
-              </Button>
             </div>
           </div>
         </section>
 
-        {/* 機能 */}
         <section className="py-16 px-4">
           <div className="container max-w-6xl mx-auto">
             <div className="text-center mb-12">
@@ -66,7 +61,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 統計 */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="container max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-12">学習効果</h2>
@@ -88,7 +82,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="py-16 px-4 bg-primary text-primary-foreground">
           <div className="container max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">今すぐ開始</h2>
@@ -110,20 +103,17 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
 
-/**
- * 機能カードコンポーネント
- */
 function FeatureCard({ 
   title, 
   description,
   color
 }: { 
-  title: string;
-  description: string;
-  color: string;
+  title: string
+  description: string
+  color: string
 }) {
   return (
     <Card className="feature-card">
@@ -139,5 +129,5 @@ function FeatureCard({
         </CardDescription>
       </CardContent>
     </Card>
-  );
+  )
 }
