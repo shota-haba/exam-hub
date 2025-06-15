@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
+    <div>
       <main className="flex-1">
         <section className="py-20 px-4 border-b">
           <div className="container max-w-4xl mx-auto text-center">
