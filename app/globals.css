@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* shadcn/ui標準カラーシステム */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    
+    /* 追加カラー */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 32.5 94.6% 43.7%;
+    --warning-foreground: 210 40% 98%;
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 210 40% 98%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 32.5 94.6% 43.7%;
+    --warning-foreground: 20.5 90.2% 4.3%;
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 222.2 84% 4.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+/* shadcn/ui最適化コンポーネント */
+@layer components {
+  .exam-card {
+    @apply bg-card border border-border rounded-lg p-6 transition-all duration-200 hover:shadow-md hover:border-muted-foreground/50;
+  }
+  
+  .stat-card {
+    @apply bg-card border border-border rounded-lg p-4 transition-colors hover:bg-muted/50;
+  }
+  
+  .feature-card {
+    @apply bg-card border border-border rounded-lg p-6 text-center transition-all duration-200 hover:shadow-sm hover:border-muted-foreground/50;
+  }
+  
+  .result-stat {
+    @apply bg-muted rounded-lg p-4 text-center;
+  }
+  
+  .question-choice {
+    @apply relative rounded-lg border border-border p-4 transition-all hover:bg-muted/50 cursor-pointer;
+  }
+  
+  .question-choice.correct {
+    @apply border-green-500 bg-green-50 dark:bg-green-950;
+  }
+  
+  .question-choice.incorrect {
+    @apply border-red-500 bg-red-50 dark:bg-red-950;
+  }
+  
+  .explanation-box {
+    @apply mt-6 p-4 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-950 dark:border-blue-800;
+  }
+  
+  .mode-indicator {
+    @apply p-3 rounded-lg flex items-center justify-center;
+  }
+  
+  .mode-indicator.warmup {
+    @apply bg-blue-50 dark:bg-blue-950;
+  }
+  
+  .mode-indicator.review {
+    @apply bg-red-50 dark:bg-red-950;
+  }
+  
+  .mode-indicator.repetition {
+    @apply bg-green-50 dark:bg-green-950;
+  }
+  
+  .mode-indicator.comprehensive {
+    @apply bg-yellow-50 dark:bg-yellow-950;
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
