@@ -1,94 +1,71 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from './supabase/client'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { supabase } from '@/lib/supabase/client'
 import { User, Session } from '@supabase/supabase-js'
-import { AuthContextType } from './types'
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signInWithGoogle: async () => {},
-  signOut: async () => {},
-})
+interface AuthContextType {
+  user: User | null
+  session: Session | null
+  loading: boolean
+  signInWithGoogle: () => Promise<void>
+  signOut: () => Promise<void>
+}
 
-export const useAuth = () => useContext(AuthContext)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const getSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        if (error) {
-          console.error('セッション取得エラー:', error)
-        } else {
-          setSession(session)
-          setUser(session?.user ?? null)
-        }
-      } catch (error) {
-        console.error('セッション取得中にエラーが発生しました:', error)
-      } finally {
-        setLoading(false)
-      }
+      const { data: { session } } = await supabase.auth.getSession()
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
     }
 
     getSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-      }
-    )
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
 
     return () => subscription.unsubscribe()
   }, [])
 
   const signInWithGoogle = async () => {
-    try {
-      setLoading(true)
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
-        },
-      })
-      if (error) {
-        console.error('Googleサインインエラー:', error)
-        throw error
-      }
-    } catch (error) {
-      console.error('Googleサインイン中にエラーが発生しました:', error)
-      setLoading(false)
-      throw error
-    }
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback`,
+      },
+    })
   }
 
   const signOut = async () => {
-    try {
-      setLoading(true)
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('サインアウトエラー:', error)
-        throw error
-      }
-    } catch (error) {
-      console.error('サインアウト中にエラーが発生しました:', error)
-      throw error
-    } finally {
-      setLoading(false)
-    }
+    await supabase.auth.signOut()
   }
 
-  return (
-    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const value = {
+    user,
+    session,
+    loading,
+    signInWithGoogle,
+    signOut,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
 }
