@@ -11,10 +11,9 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import PageHeader from '@/components/shared/PageHeader'
-import StatCard from '@/components/shared/StatCard'
 import { ExamImport } from '@/components/features/exam-manager/ExamImport'
 import { ShareToggle } from '@/components/features/exam-manager/ShareToggle'
-import { getUserExams, getDashboardStats } from '@/lib/supabase/db'
+import { getUserExams } from '@/lib/supabase/db'
 import { createClient } from '@/lib/supabase/server'
 import { ExamSet } from '@/lib/types'
 import { deleteExamAction } from '@/actions/exam'
@@ -27,41 +26,11 @@ export default async function ExamsPage() {
     return null
   }
 
-  const [exams, stats] = await Promise.all([
-    getUserExams(user.id),
-    getDashboardStats(user.id)
-  ])
+  const exams = await getUserExams(user.id)
 
   return (
     <main className="container py-8 px-4 max-w-7xl mx-auto space-y-8">
-      <PageHeader
-        title="試験管理"
-        description="問題集のインポート・管理"
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="試験数"
-          value={stats.totalExams}
-          subtitle="インポート済み"
-        />
-        <StatCard
-          title="問題数"
-          value={stats.totalQuestions}
-          subtitle="全試験合計"
-        />
-        <StatCard
-          title="平均進捗"
-          value={`${stats.averageProgress}%`}
-          subtitle="全試験平均"
-          trend={{ value: 12, isPositive: true }}
-        />
-        <StatCard
-          title="学習時間"
-          value={`${Math.floor(stats.totalSessionTime / 60)}h ${stats.totalSessionTime % 60}m`}
-          subtitle="今週"
-        />
-      </div>
+      <PageHeader title="試験管理" />
 
       <ExamImport />
       
@@ -82,9 +51,6 @@ export default async function ExamsPage() {
                   <div className="h-8 w-8 bg-muted-foreground/20 rounded"></div>
                 </div>
                 <h3 className="text-xl font-medium mb-3">試験がありません</h3>
-                <p className="text-muted-foreground text-center mb-8 max-w-md">
-                  上記のフォームから試験問題集をインポートしてください
-                </p>
               </CardContent>
             </Card>
           )}
@@ -96,7 +62,6 @@ export default async function ExamsPage() {
 
 function ExamManagementCard({ exam }: { exam: ExamSet }) {
   const questionCount = exam.data?.questions?.length || 0
-  const progress = 70 // 仮の進捗値
 
   const handleDelete = async () => {
     if (!confirm('この試験を削除しますか？')) return
@@ -134,19 +99,8 @@ function ExamManagementCard({ exam }: { exam: ExamSet }) {
       <CardContent className="pb-4 space-y-4">
         <div className="flex items-center justify-between">
           <Badge variant="secondary">
-            {questionCount}問
+            {questionCount}設問
           </Badge>
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground">進捗</div>
-            <div className="text-sm font-semibold">{progress}%</div>
-          </div>
-        </div>
-        
-        <div className="w-full bg-muted rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300" 
-            style={{ width: `${progress}%` }}
-          />
         </div>
 
         <ShareToggle examId={exam.id} initialShared={exam.is_shared} />

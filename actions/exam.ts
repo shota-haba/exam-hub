@@ -8,7 +8,8 @@ import {
   updateExamShared, 
   toggleExamLike, 
   saveSessionResult,
-  deleteExamSet 
+  deleteExamSet,
+  importSharedExam
 } from '@/lib/supabase/db'
 import { SessionSaveData } from '@/lib/types'
 
@@ -40,9 +41,33 @@ export async function importExamAction(formData: FormData) {
     await importExamSet(user.id, jsonData.試験, jsonData)
     
     revalidatePath('/exams')
+    revalidatePath('/dashboard')
     return { success: true }
   } catch (error) {
     console.error('インポートエラー:', error)
+    return { success: false, error: 'インポートに失敗しました' }
+  }
+}
+
+/**
+ * 共有試験インポートアクション
+ */
+export async function importSharedExamAction(examId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/')
+  }
+  
+  try {
+    await importSharedExam(user.id, examId)
+    
+    revalidatePath('/exams')
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('共有試験インポートエラー:', error)
     return { success: false, error: 'インポートに失敗しました' }
   }
 }
@@ -134,6 +159,7 @@ export async function deleteExamAction(examId: string) {
   try {
     await deleteExamSet(examId, user.id)
     revalidatePath('/exams')
+    revalidatePath('/dashboard')
     return { success: true }
   } catch (error) {
     console.error('試験削除エラー:', error)

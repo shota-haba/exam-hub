@@ -129,6 +129,70 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 }
 
 /**
+ * アナリティクスデータを取得
+ */
+export async function getAnalyticsData(userId: string) {
+  const supabase = await createClient()
+  
+  // 試験一覧を取得
+  const { data: exams } = await supabase
+    .from('exam_sets')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  
+  if (!exams) return []
+  
+  // 各試験のセッション結果を取得
+  const { data: sessions } = await supabase
+    .from('session_results')
+    .select('*')
+    .eq('user_id', userId)
+  
+  // 各試験のユーザー進捗を取得
+  const { data: progress } = await supabase
+    .from('user_progress')
+    .select('*')
+    .eq('user_id', userId)
+  
+  const today = new Date().toDateString()
+  
+  return exams.map(exam => {
+    const examSessions = sessions?.filter(s => s.exam_set_id === exam.id) || []
+    const examProgress = progress?.filter(p => p.exam_set_id === exam.id) || []
+    const totalQuestions = exam.data?.questions?.length || 0
+    
+    // KPI計算
+    const warmupCount = totalQuestions - examProgress.length // 未回答設問数
+    const reviewCount = examProgress.filter(p => p.last_result === false).length // 不正解設問数
+    const repetitionCount = examProgress.filter(p => p.last_result === true).length // 正解設問数
+    
+    const todaySessions = examSessions.filter(s => 
+      new Date(s.created_at).toDateString() === today
+    ).length
+    
+    const totalSessions = examSessions.length
+    
+    const totalStudyTime = examSessions.reduce((total, session) => {
+      const start = new Date(session.start_time).getTime()
+      const end = new Date(session.end_time).getTime()
+      return total + (end - start) / 1000 / 60 // 分単位
+    }, 0)
+    
+    return {
+      id: exam.id,
+      title: exam.title,
+      warmupCount,
+      reviewCount,
+      repetitionCount,
+      todaySessions,
+      totalSessions,
+      totalStudyTime: Math.round(totalStudyTime)
+    }
+  })
+}
+
+/**
  * 試験をインポート
  */
 export async function importExamSet(
@@ -249,6 +313,21 @@ export async function saveSessionResult(
     .single()
   
   if (error) throw error
+  
+  // ユーザー進捗を更新
+  for (const questionResult of questionsData) {
+    await supabase
+      .from('user_progress')
+      .upsert({
+        user_id: userId,
+        question_id: questionResult.question.id,
+        exam_set_id: examId,
+        last_result: questionResult.isCorrect,
+        attempt_count: supabase.raw('COALESCE(attempt_count, 0) + 1'),
+        last_attempted: new Date().toISOString()
+      })
+  }
+  
   return data
 }
 
@@ -265,4 +344,40 @@ export async function deleteExamSet(examId: string, userId: string): Promise<voi
     .eq('user_id', userId)
   
   if (error) throw error
+}
+
+/**
+ * 共有試験をインポート
+ */
+export async function importSharedExam(
+  userId: string,
+  sourceExamId: string
+): Promise<ExamSet> {
+  const supabase = await createClient()
+  
+  // 元の試験データを取得
+  const { data: sourceExam, error: fetchError } = await supabase
+    .from('exam_sets')
+    .select('*')
+    .eq('id', sourceExamId)
+    .eq('is_shared', true)
+    .single()
+  
+  if (fetchError) throw fetchError
+  
+  // 新しい試験として保存
+  const { data, error } = await supabase
+    .from('exam_sets')
+    .insert({
+      title: `${sourceExam.title} (コピー)`,
+      user_id: userId,
+      data: sourceExam.data,
+      is_shared: false,
+      likes_count: 0
+    })
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data
 }

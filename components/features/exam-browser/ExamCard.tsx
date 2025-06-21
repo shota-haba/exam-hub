@@ -1,14 +1,17 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { ExamSet } from '@/lib/types'
 import { LikeButton } from './LikeButton'
+import { ImportButton } from './ImportButton'
 
 interface ExamCardProps {
   exam: ExamSet
   showLikeButton?: boolean
+  showImportButton?: boolean
 }
 
-export default function ExamCard({ exam, showLikeButton = false }: ExamCardProps) {
+export default function ExamCard({ exam, showLikeButton = false, showImportButton = false }: ExamCardProps) {
   const questionCount = exam.data?.questions?.length || 0
 
   return (
@@ -34,7 +37,7 @@ export default function ExamCard({ exam, showLikeButton = false }: ExamCardProps
       <CardContent>
         <div className="flex items-center justify-between">
           <Badge variant="secondary">
-            {questionCount}問
+            {questionCount}設問
           </Badge>
           {exam.is_shared && (
             <Badge variant="outline">
@@ -43,6 +46,12 @@ export default function ExamCard({ exam, showLikeButton = false }: ExamCardProps
           )}
         </div>
       </CardContent>
+
+      {showImportButton && (
+        <CardFooter>
+          <ImportButton examId={exam.id} examTitle={exam.title} />
+        </CardFooter>
+      )}
     </Card>
   )
 }

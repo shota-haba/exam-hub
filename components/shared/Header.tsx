@@ -32,14 +32,14 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-16 items-center justify-between px-4 max-w-7xl mx-auto">
         <div className="flex items-center space-x-4">
-          <Link href={user ? "/dashboard" : "/"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <Link href={user ? "/dashboard" : "/"} className="flex items-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
               E
             </div>
-            <span className="text-xl font-semibold">Exam Hub</span>
+            <span className="text-xl font-semibold">学習プラットフォーム</span>
           </Link>
         </div>
         
@@ -48,13 +48,13 @@ export default function Header() {
             <>
               <Link 
                 href="/dashboard" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 ダッシュボード
               </Link>
               <Link 
                 href="/exams" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 試験管理
               </Link>
@@ -64,10 +64,10 @@ export default function Header() {
         
         <div className="flex items-center space-x-4">
           {loading ? (
-            <div className="h-10 w-32 bg-muted animate-pulse rounded-md" />
+            <div className="h-10 w-32 bg-muted rounded-md" />
           ) : !user ? (
             <Button onClick={handleSignIn}>
-              Googleでログイン
+              ログイン
             </Button>
           ) : (
             <DropdownMenu>

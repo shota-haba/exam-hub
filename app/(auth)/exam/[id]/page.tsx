@@ -63,7 +63,7 @@ export default function ExamPage() {
         setExamSet(data)
         
         if (!data.data?.questions || data.data.questions.length === 0) {
-          throw new Error('問題が見つかりません')
+          throw new Error('設問が見つかりません')
         }
         
         const allQuestions = [...data.data.questions]
@@ -133,6 +133,7 @@ export default function ExamPage() {
     
     setSelectedAnswer(answerId)
     setIsAnswered(true)
+    setShowExplanation(true) // 即座に解説を表示
     
     setSessionQuestions(prev => {
       const updated = [...prev]
@@ -146,8 +147,7 @@ export default function ExamPage() {
     })
     
     toast({
-      title: isCorrect ? '正解！' : '不正解',
-      description: isCorrect ? 'よくできました' : '次は頑張りましょう',
+      title: isCorrect ? '正解' : '不正解',
       variant: isCorrect ? 'default' : 'destructive',
     })
   }, [isAnswered, currentQuestion, timeLimit, timeLeft, currentQuestionIndex, toast])
@@ -223,7 +223,7 @@ export default function ExamPage() {
   if (loading) {
     return (
       <div className="container py-8 px-4 flex justify-center">
-        <div className="animate-pulse">読み込み中...</div>
+        <div>読み込み中...</div>
       </div>
     )
   }
@@ -236,43 +236,57 @@ export default function ExamPage() {
         <Card className="exam-card mb-6">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <ResultStat 
-                label="正解数" 
-                value={`${results.correctCount}/${results.totalQuestions}`} 
-              />
-              <ResultStat 
-                label="正答率" 
-                value={`${Math.round((results.correctCount / results.totalQuestions) * 100)}%`} 
-              />
-              <ResultStat 
-                label="所要時間" 
-                value={`${Math.round(results.timeTaken)}秒`} 
-              />
+              <div className="stat-card">
+                <p className="text-sm text-muted-foreground">正解数</p>
+                <p className="text-2xl font-bold">{results.correctCount}/{results.totalQuestions}</p>
+              </div>
+              <div className="stat-card">
+                <p className="text-sm text-muted-foreground">正答率</p>
+                <p className="text-2xl font-bold">{Math.round((results.correctCount / results.totalQuestions) * 100)}%</p>
+              </div>
+              <div className="stat-card">
+                <p className="text-sm text-muted-foreground">所要時間</p>
+                <p className="text-2xl font-bold">{Math.round(results.timeTaken)}秒</p>
+              </div>
             </div>
             
-            <h2 className="text-xl font-semibold mb-4">問題別結果</h2>
+            <h2 className="text-xl font-semibold mb-4">設問別結果</h2>
             <div className="space-y-4">
               {results.questions.map((item, index) => (
                 <div key={index} className="p-4 border rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <div className={`p-1.5 rounded-full ${item.isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                      <div className="w-3 h-3 rounded-full bg-current"></div>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm ${item.isCorrect ? 'bg-green-600' : 'bg-red-600'}`}>
+                        {item.isCorrect ? '○' : '×'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{item.question.text}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{item.question.text}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {item.selectedAnswer ? `回答: ${item.question.choices.find(c => c.identifier === item.selectedAnswer)?.text || '不明'}` : '未回答'}
-                      </p>
-                      {!item.isCorrect && (
-                        <p className="text-sm text-green-600 mt-1">
-                          正解: {item.question.choices.find(c => c.isCorrect)?.text || '不明'}
-                        </p>
-                      )}
+                    
+                    <div className="ml-9 space-y-2">
+                      <div>
+                        <p className="text-sm font-medium">すべての選択肢:</p>
+                        <div className="space-y-1">
+                          {item.question.choices.map(choice => (
+                            <div key={choice.id} className={`text-sm p-2 rounded ${
+                              choice.isCorrect ? 'bg-green-50 border border-green-200' :
+                              item.selectedAnswer === choice.identifier ? 'bg-red-50 border border-red-200' :
+                              'bg-gray-50'
+                            }`}>
+                              <span className="font-medium">{choice.identifier}.</span> {choice.text}
+                              {choice.isCorrect && <span className="ml-2 text-green-600 font-medium">(正解)</span>}
+                              {item.selectedAnswer === choice.identifier && !choice.isCorrect && <span className="ml-2 text-red-600 font-medium">(選択)</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
                       {item.question.explanation && (
-                        <p className="text-sm border-t mt-2 pt-2 text-muted-foreground">
-                          <span className="font-medium">解説: </span>
-                          {item.question.explanation}
-                        </p>
+                        <div>
+                          <p className="text-sm font-medium">公式解説:</p>
+                          <p className="text-sm text-muted-foreground">{item.question.explanation}</p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -296,7 +310,7 @@ export default function ExamPage() {
   if (!currentQuestion) {
     return (
       <div className="container py-8 px-4 flex flex-col items-center">
-        <p className="mb-4">問題が見つかりませんでした</p>
+        <p className="mb-4">設問が見つかりませんでした</p>
         <Button asChild>
           <Link href="/exams">試験一覧に戻る</Link>
         </Button>
@@ -310,11 +324,11 @@ export default function ExamPage() {
         <div>
           <h2 className="text-2xl font-bold">{examSet?.title}</h2>
           <p className="text-sm text-muted-foreground">
-            {currentQuestionIndex + 1} / {questions.length}問
+            {currentQuestionIndex + 1} / {questions.length}設問
           </p>
         </div>
         {timeLimit > 0 && (
-          <div className="flex items-center text-orange-600">
+          <div className="flex items-center">
             <span className="font-bold">{timeLeft}秒</span>
           </div>
         )}
@@ -352,7 +366,7 @@ export default function ExamPage() {
                   htmlFor={choice.id} 
                   className="flex items-start cursor-pointer"
                 >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-primary text-primary shadow peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground mr-3">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-primary text-primary mr-3">
                     <span className="text-sm">{choice.identifier}</span>
                   </div>
                   <div>{choice.text}</div>
@@ -367,54 +381,31 @@ export default function ExamPage() {
             ))}
           </RadioGroup>
           
-          {isAnswered && currentQuestion.explanation && (
-            <div className={`explanation-box transition-all duration-300 ${showExplanation ? 'opacity-100 max-h-80' : 'opacity-0 max-h-0 overflow-hidden'}`}>
+          {isAnswered && showExplanation && currentQuestion.explanation && (
+            <div className="explanation-box">
               <div className="flex">
                 <div className="w-5 h-5 bg-blue-600 rounded-full mr-2 shrink-0 mt-0.5"></div>
                 <div>
-                  <h3 className="font-medium text-blue-800 mb-1">解説</h3>
-                  <p className="text-sm text-blue-900">{currentQuestion.explanation}</p>
+                  <h3 className="font-medium mb-1">解説</h3>
+                  <p className="text-sm">{currentQuestion.explanation}</p>
                 </div>
               </div>
             </div>
           )}
         </CardContent>
         
-        <CardFooter className="justify-between pt-2 pb-6">
-          {isAnswered && currentQuestion.explanation && (
-            <Button 
-              variant="outline" 
-              onClick={() => setShowExplanation(!showExplanation)}
-            >
-              {showExplanation ? '解説を隠す' : '解説を見る'}
-            </Button>
-          )}
-          
+        <CardFooter className="justify-end pt-2 pb-6">
           {isAnswered ? (
-            <Button onClick={handleNextQuestion} className="ml-auto">
-              {currentQuestionIndex < questions.length - 1 ? '次の問題' : '結果を見る'}
+            <Button onClick={handleNextQuestion}>
+              {currentQuestionIndex < questions.length - 1 ? '次の設問' : '結果を見る'}
             </Button>
           ) : (
-            <Button variant="outline" onClick={() => handleAnswer(null)} className="ml-auto">
+            <Button variant="outline" onClick={() => handleAnswer(null)}>
               スキップ
             </Button>
           )}
         </CardFooter>
       </Card>
     </main>
-  )
-}
-
-function ResultStat({ 
-  label, value
-}: { 
-  label: string 
-  value: string
-}) {
-  return (
-    <div className="result-stat">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-    </div>
   )
 }

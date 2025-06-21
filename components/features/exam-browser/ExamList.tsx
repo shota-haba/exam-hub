@@ -5,12 +5,14 @@ import { Card, CardContent } from '@/components/ui/card'
 interface ExamListProps {
   exams: ExamSet[]
   showLikeButton?: boolean
+  showImportButton?: boolean
   emptyMessage?: string
 }
 
 export default function ExamList({ 
   exams, 
-  showLikeButton = false, 
+  showLikeButton = false,
+  showImportButton = false,
   emptyMessage = "試験がありません" 
 }: ExamListProps) {
   if (exams.length === 0) {
@@ -33,6 +35,7 @@ export default function ExamList({
           key={exam.id} 
           exam={exam} 
           showLikeButton={showLikeButton}
+          showImportButton={showImportButton}
         />
       ))}
     </div>
